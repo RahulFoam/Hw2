@@ -1,0 +1,5 @@
+To run this cuda code 
+
+1 ) load : module load cudatoolkit
+
+2 ) nvcc Matmul.cu -o Matmul.out
