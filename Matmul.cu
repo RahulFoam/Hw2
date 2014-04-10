@@ -24,14 +24,14 @@ __global__ void matmul(double *A, double *B, double *C, int n)
 int main(int argc, char* argv[])
 {
 
-	//size of vector
+	//size of matrix
 	n=100
 
-	// input the host vectors
+	// input the host matrix
 	double *h_A;
 	double *h_B;
 
-	// output vector
+	// output matrix
 	double *h_C;
 
 	// device input vectors
@@ -83,11 +83,36 @@ int main(int argc, char* argv[])
 
 	// execute the kernel
 
-	matmul<<<<gridSize, blockSize>>>>(d_a, d_b, d_c, n);
+	matmul<<<<gridSize, blockSize>>>>(d_A, d_B, d_C, n);
 
 	// copy array back to host
 
-	
-	
- 
+	cudaMemcpy(h_C,d_C, bytes,cudaMemcpyDeviceToHost);
+
+	// print the result
+
+	for(i=0;i<n;i++)
+	{
+    		printf("\n");
+			for(j=0;j<=N-1;j++)
+			{
+				printf("C[%d][%d]=%d\t \n",i,j,C[i][j]);
+			}
+	}	
+
+	// release device memory
+
+	cudaFree(d_A);
+	cudaFree(d_B);
+	cudaFree(d_C);
+
+	// release host memory
+
+	free(h_A);
+	free(h_B);
+	free(h_C);
+
+return 0;
+
+}
 
