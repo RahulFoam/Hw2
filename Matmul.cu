@@ -8,6 +8,7 @@ __global__ void matmul(double *A, double *B, double *C, int n)
 {
 
 	// get global threadID
+
 	int r = blockIdx.x*blockDim.x+threadIdx.x;
 	int c = blockIdx.y*blockDim.y+threadIdx.y;
 	
@@ -24,8 +25,9 @@ __global__ void matmul(double *A, double *B, double *C, int n)
 int main(int argc, char* argv[])
 {
 
-	//size of matrix
-	n=100
+	int T = 100, B = 1; //number of threads and block per grid
+
+	
 
 	// input the host matrix
 	double *h_A;
@@ -34,11 +36,11 @@ int main(int argc, char* argv[])
 	// output matrix
 	double *h_C;
 
-	// device input vectors
+	// device input matrix
 	double *d_A;
 	double *d_B;
 
-	// output vector
+	// output matrix
 	double *d_C;
 
 	// size in byte of the vector
@@ -62,8 +64,8 @@ int main(int argc, char* argv[])
 	{
 		for(j=0;j<n;j++)
 		{
-			h_A[i][j] = 2;
-			h_B[i][j] = 3;
+			h_A[i][j] = 2.0;
+			h_B[i][j] = 3.0;
 		}
 	}
 
@@ -96,7 +98,7 @@ int main(int argc, char* argv[])
     		printf("\n");
 			for(j=0;j<=N-1;j++)
 			{
-				printf("C[%d][%d]=%d\t \n",i,j,C[i][j]);
+				printf("C[%d][%d]=%f\t \n",i,j,C[i][j]);
 			}
 	}	
 
