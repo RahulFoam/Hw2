@@ -2,6 +2,8 @@
 #include "stdlib.h"
 #include "math.h"
 
+#define blockSize 10
+
 // CUDA kernel .
 
 __global__ void matmul(double *A, double *B, double *C, int n)
@@ -19,44 +21,30 @@ __global__ void matmul(double *A, double *B, double *C, int n)
 		temp=temp+A[r*n+k]*B[k*n+c];
 
 	}
-	C[r*+c]=temp;
+	C[r*k+c]=temp;
 }
 
 int main(int argc, char* argv[])
 {
-
-	int T = 100, B = 1; //number of threads and block per grid
-
-	
-
+	// perform matrix multiplication C = A*B
+	// A, B and C of size N x N
 	// input the host matrix
-	double *h_A;
-	double *h_B;
 
-	// output matrix
-	double *h_C;
+	int n,m;
 
-	// device input matrix
-	double *d_A;
-	double *d_B;
+	m =10;
+	n=m*blockSize;
 
-	// output matrix
-	double *d_C;
+	printf("Executing matrix multiplication");
+	printf("Matrix size : %f",n);
 
-	// size in byte of the vector
-	size_t bytes = n*sizeof(double);
-	
-	// alocate memory to each matrix on the host
-	h_A = (double*)malloc(bytes);
-	h_B = (double*)malloc(bytes);
-	h_C = (double*)malloc(bytes);
+	// allocating memory to the host
 
-	// allocate memory to each matrix on GPU
-	cudaMalloc(&d_A, bytes);
-	cudaMalloc(&d_B, bytes);
-	cudaMalloc(&d_C, bytes);
+	double *h_A, *h_B, *h_C;
 
-	int i,j
+	h_A = double[N][N];
+	h_B = double[N][N];
+	h_C = double[N][N];
 
 	// initialize the matrix on host
 
@@ -69,38 +57,72 @@ int main(int argc, char* argv[])
 		}
 	}
 
+	// allocate memory on device
+
+	int size = n*n*sizeof(double) // size of the memory in bites
+
+	// device input matrix
+	double *d_A, *d_B, *d_C;
+	
+	// allocate memory to each matrix on GPU
+	cudaMalloc(&d_A, size);
+	cudaMalloc(&d_B, size);
+	cudaMalloc(&d_C, size);
+
+	dim3 threadBlock(blockSize,blockSize);
+	dim3 gridSize(m,m);
+
 	// copy host to device
 
 	cudaMemcpy(d_A,h_A,bytes,cudaMemcpyHostToDevice);
 	cudaMemcpy(d_B,h_B,bytes,cudaMemcpyHostToDevice);
 
-	int blockSize, gridSize;
-
-	// number of threads in each block
-	blockSize = 64;
-
-	// number of thread blocks in grid
-
-	gridSize = int(cell)((float)n/blockSize);
-
 	// execute the kernel
 
-	matmul<<<<gridSize, blockSize>>>>(d_A, d_B, d_C, n);
+	matmul<<<gridSize, threadBlock>>>(d_A, d_B, d_C, n);
 
-	// copy array back to host
+	// matrix multiplication on the CPU
 
-	cudaMemcpy(h_C,d_C, bytes,cudaMemcpyDeviceToHost);
-
-	// print the result
-
-	for(i=0;i<n;i++)
+	float temp;
+	for (int r=0;r<n;r++)
 	{
-    		printf("\n");
-			for(j=0;j<=N-1;j++)
+		for(int c=0;c<n;c++)	
+		{	
+		temp = 0.0
+			for(int k=0;k<n;k++)
 			{
-				printf("C[%d][%d]=%f\t \n",i,j,C[i][j]);
+			temp=temp+h_A[r*n+k]*h_B[k*n+c];
 			}
-	}	
+			h_C[r*n+c]=temp;	
+		}
+	}
+
+	// memory to store memory on the GPU host
+
+	float *C
+
+	C = float[n][n];
+
+	// copy the GPU result back to CPU
+
+	cudaMemcpy(C,d_C, size,cudaMemcpyDeviceToHost);
+
+	// checking the answer to check if things are woring corect
+
+	for(int r=0,r<n,r++)
+	{
+		for(int c=0;c<n;c++)
+		{
+			if(C[r*n+c]!=h_C[r*n+c])
+			{
+				printf("wrong answer!");
+				r=c=n;
+			}
+		}
+	}
+
+	printf("End of the code");
+
 
 	// release device memory
 
